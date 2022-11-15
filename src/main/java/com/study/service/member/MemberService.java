@@ -42,4 +42,8 @@ public class MemberService {
     public int remove(String id) {
         return mapper.delete(id);
     }
+
+    public MemberDto getByNickName(String nickName) {
+        return mapper.selectByNickName(nickName);
+    }
 }

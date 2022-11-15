@@ -37,6 +37,17 @@
                     <input class="form-control" type="text" value="${member.id }" readonly>
                 </div>
 
+                <div class="mb-3">
+                    <label for="" class="form-label">
+                        닉네임
+                    </label>
+                    <div class="input-group">
+                        <input id="userNickNameInput1" class="form-control" type="text" value="${member.nickName }" name="nickName" data-old-value="${member.nickName }">
+                        <button disabled id="userNickNameExistButton1" type="button" class="btn btn-outline-secondary">중복확인</button>
+                    </div>
+                    <div id="userNickNameText1" class="form-text"></div>
+                </div>
+
                 <div class="mb-3" class="form-label">
                     <label for="" class="form-label">
                         비밀번호
@@ -138,6 +149,44 @@
     document.querySelector("#passwordInput1").addEventListener("keyup", matchPassword)
     document.querySelector("#passwordInput2").addEventListener("keyup", matchPassword)
 
+    // 닉네임 중복확인
+    const userNickNameInput1 = document.querySelector("#userNickNameInput1");
+    const userNickNameExistButton1 = document.querySelector("#userNickNameExistButton1");
+    const userNickNameText1 = document.querySelector("#userNickNameText1");
+
+    // 닉네임 중복확인 버튼 클릭하면
+    userNickNameExistButton1.addEventListener("click", function() {
+        availableNickName = false;
+        const userNickName = userNickNameInput1.value;
+
+        fetch(ctx + "/member/existNickName/" + userNickName)
+            .then(res => res.json())
+            .then(data => {
+                // 응답 받아서
+                document.querySelector("#userNickNameText1").innerText = data.message;
+
+                if (data.status == "not exist") {
+                    availableNickName = true;
+                    enableSubmitButton();
+                }
+            });
+    });
+
+    // 닉네임 input의 값이 변경되었을 때
+    userNickNameInput1.addEventListener("keyup", function() {
+        const oldValue = userNickNameInput1.dataset.oldValue;
+        const newValue = userNickNameInput1.value;
+        if (oldValue == newValue) {
+            // 기존 이메일과 같으면 아무일도 일어나지 않음
+            userNickNameText1.innerText = "";
+            userNickNameExistButton1.setAttribute("disabled", "disabled");
+        } else {
+            // 기존 이메일과 다르면 중복체크 요청
+            userNickNameText1.innerText = "이메일 중복확인을 해주세요.";
+            userNickNameExistButton1.removeAttribute("disabled");
+        }
+    });
+
     // 이메일 중복확인
     const userEmailInput1 = document.querySelector("#userEmailInput1");
     const userEmailExistButton1 = document.querySelector("#userEmailExistButton1");
@@ -183,17 +232,25 @@
 
     // 이메일 사용 가능
     let availableEmail = true;
+    // 닉네임 사용 가능
+    let availableNickName = true;
     // 패스워드 사용 가능
     let availablePassword = true;
 
     function enableModifyButton() {
         const button = document.querySelector("#modifyButton1");
-        if (availableEmail && availablePassword) {
+        if (availableEmail && availableNickName && availablePassword) {
             button.removeAttribute("disabled")
         } else {
             button.setAttribute("disabled", "");
         }
     }
+
+    // 닉네임 input 변경 시 submit 버튼 비활성화
+    document.querySelector("#userNickNameInput1").addEventListener("keyup", function () {
+        availableNickName = false;
+        enableModifyButton();
+    })
 
     // 이메일 input 변경 시 submit 버튼 비활성화
     document.querySelector("#userEmailInput1").addEventListener("keyup", function () {

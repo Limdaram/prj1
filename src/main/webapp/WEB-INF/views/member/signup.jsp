@@ -35,6 +35,19 @@
                     <div id="userIdText1" class="form-text"></div>
                 </div>
 
+
+                <div class="mb-3">
+                    <label for="" class="form-label">
+                        닉네임
+                    </label>
+
+                    <div class="input-group">
+                        <input id="userNickNameInput1" class="form-control" type="text" name="nickName">
+                        <button id="userNickNameExistButton1" class="btn btn-outline-secondary" type="button">중복확인</button>
+                    </div>
+                    <div id="userNickNameText1" class="form-text"></div>
+                </div>
+
                 <div class="mb-3">
                     <label for="" class="form-label">
                         비밀번호
@@ -94,6 +107,26 @@
             });
     });
 
+    // 닉네임 중복확인
+    document.querySelector("#userNickNameExistButton1").addEventListener("click", function () {
+        availableNickName = false;
+        // 입력된 userNickName을
+        const userNickName = document.querySelector("#userNickNameInput1").value;
+
+        // fetch 요청으로 보내고
+        fetch(ctx + "/member/existNickName/" + userNickName)
+            .then(res => res.json())
+            .then(data => {
+                // 응답 받아서
+                document.querySelector("#userNickNameText1").innerText = data.message;
+
+                if (data.status == "not exist") {
+                    availableNickName = true;
+                    enableSubmitButton();
+                }
+            });
+    });
+
     // 패스워드 일치하는지 확인
     const passwordInput1 = document.querySelector("#passwordInput1");
     const passwordInput2 = document.querySelector("#passwordInput2");
@@ -147,6 +180,8 @@
 
     // 아이디 사용 가능
     let availableId = false;
+    // 닉네임 사용 가능
+    let availableNickName = false;
     // 이메일 사용 가능
     let availableEmail = false;
     // 패스워드 사용 가능
@@ -154,7 +189,7 @@
 
     function enableSubmitButton() {
         const button = document.querySelector("#submitButton1");
-        if (availableId && availableEmail && availablePassword) {
+        if (availableId && availableNickName && availableEmail && availablePassword) {
             button.removeAttribute("disabled")
         } else {
             button.setAttribute("disabled", "");
@@ -164,6 +199,12 @@
     // 아이디 input 변경 시 submit 버튼 비활성화
     document.querySelector("#userIdInput1").addEventListener("keyup", function () {
         availableId = false;
+        enableSubmitButton();
+    })
+
+    // 닉네임 input 변경 시 submit 버튼 비활성화
+    document.querySelector("#userNickNameInput1").addEventListener("keyup", function () {
+        availableNickName = false;
         enableSubmitButton();
     })
 
