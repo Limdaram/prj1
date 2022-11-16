@@ -2,6 +2,7 @@
          pageEncoding="utf-8" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="my" tagdir="/WEB-INF/tags" %>
+<%@taglib prefix="sec" uri="http://www.springframework.org/security/tags" %>
 
 <!doctype html>
 <html lang="en">
@@ -15,6 +16,7 @@
 
 </head>
 <body>
+
 <my:navBar active="register"></my:navBar>
 <div class="container-md">
     <div class="row">
@@ -33,7 +35,9 @@
                     <label class="form-label">
                         작성자
                     </label>
-                    <input required="required" class="form-control" type="text" name="writer">
+                    <input
+                            value="<sec:authentication property="name"/>"
+                            required="required" class="form-control" type="text" name="writer" readonly>
                 </div>
 
                 <div class="mb-3">

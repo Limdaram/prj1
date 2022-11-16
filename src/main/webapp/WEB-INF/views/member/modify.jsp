@@ -48,11 +48,13 @@
                     <div id="userNickNameText1" class="form-text"></div>
                 </div>
 
+                <input type="checkbox" name="newPassword" value="true" id="newPasswordCheckbox1"> 암호 변경
+
                 <div class="mb-3" class="form-label">
                     <label for="" class="form-label">
                         비밀번호
                     </label>
-                    <input id="passwordInput1" class="form-control" type="password" value="${member.password}" name="password">
+                    <input disabled id="passwordInput1" class="form-control" type="password" value="${member.password}" name="password">
                     <div id="passwordText1" class="form-text"></div>
                 </div>
 
@@ -60,7 +62,7 @@
                     <label for="" class="form-label">
                         비밀번호 확인
                     </label>
-                    <input id="passwordInput2" class="form-control" type="password">  <%-- 확인용이라 실제 값이 넘어갈 일이 없기 때문에 name 생략 --%>
+                    <input disabled id="passwordInput2" class="form-control" type="password">  <%-- 확인용이라 실제 값이 넘어갈 일이 없기 때문에 name 생략 --%>
                 </div>
 
                 <div class="mb-3">
@@ -113,7 +115,24 @@
         integrity="sha384-OERcA2EqjJCMA+/3y+gxIOqMEjwtxJY7qPCqsdltbNJuaOe923+mo//f6V8Qbsw3"
         crossorigin="anonymous"></script>
 <script>
+
     const ctx = "${pageContext.request.contextPath}";
+
+    // 이메일 사용 가능
+    let availableEmail = true;
+    // 닉네임 사용 가능
+    let availableNickName = true;
+    // 패스워드 사용 가능
+    let availablePassword = true;
+
+    function enableModifyButton() {
+        const button = document.querySelector("#modifyButton1");
+        if (availableEmail && availableNickName && availablePassword) {
+            button.removeAttribute("disabled")
+        } else {
+            button.setAttribute("disabled", "");
+        }
+    }
 
     document.querySelector("#modalConfirmButton").addEventListener("click", function() {
         const form = document.forms.form1;
@@ -163,28 +182,34 @@
             .then(res => res.json())
             .then(data => {
                 // 응답 받아서
-                document.querySelector("#userNickNameText1").innerText = data.message;
+                userNickNameText1.innerText = data.message;
 
                 if (data.status == "not exist") {
                     availableNickName = true;
-                    enableSubmitButton();
                 }
+                enableModifyButton();
             });
     });
 
     // 닉네임 input의 값이 변경되었을 때
     userNickNameInput1.addEventListener("keyup", function() {
+        availableNickName = false;
+
         const oldValue = userNickNameInput1.dataset.oldValue;
         const newValue = userNickNameInput1.value;
         if (oldValue == newValue) {
-            // 기존 이메일과 같으면 아무일도 일어나지 않음
+            // 기존 닉네임과 같으면 아무일도 일어나지 않음
             userNickNameText1.innerText = "";
             userNickNameExistButton1.setAttribute("disabled", "disabled");
+            availableNickName = true;
+
         } else {
-            // 기존 이메일과 다르면 중복체크 요청
+            // 기존 닉네임과 다르면 중복체크 요청
             userNickNameText1.innerText = "이메일 중복확인을 해주세요.";
             userNickNameExistButton1.removeAttribute("disabled");
+
         }
+        enableModifyButton();
     });
 
     // 이메일 중복확인
@@ -217,34 +242,26 @@
 
     // 이메일 input의 값이 변경되었을 때
     userEmailInput1.addEventListener("keyup", function() {
+        availableEmail = false;
+
         const oldValue = userEmailInput1.dataset.oldValue;
         const newValue = userEmailInput1.value;
         if (oldValue == newValue) {
             // 기존 이메일과 같으면 아무일도 일어나지 않음
             userEmailText1.innerText = "";
             userEmailExistButton1.setAttribute("disabled", "disabled");
+            availableEmail = true;
+
         } else {
             // 기존 이메일과 다르면 중복체크 요청
             userEmailText1.innerText = "이메일 중복확인을 해주세요.";
             userEmailExistButton1.removeAttribute("disabled");
         }
+        enableModifyButton();
+
     });
 
-    // 이메일 사용 가능
-    let availableEmail = true;
-    // 닉네임 사용 가능
-    let availableNickName = true;
-    // 패스워드 사용 가능
-    let availablePassword = true;
 
-    function enableModifyButton() {
-        const button = document.querySelector("#modifyButton1");
-        if (availableEmail && availableNickName && availablePassword) {
-            button.removeAttribute("disabled")
-        } else {
-            button.setAttribute("disabled", "");
-        }
-    }
 
     // 닉네임 input 변경 시 submit 버튼 비활성화
     document.querySelector("#userNickNameInput1").addEventListener("keyup", function () {
@@ -258,6 +275,18 @@
         enableModifyButton();
     })
 
+    <%-- 새 패스워드 입력 체크박스 --%>
+    document.querySelector("#newPasswordCheckbox1").addEventListener("change", function() {
+        const pwInput1 = document.querySelector("#passwordInput1");
+        const pwInput2 = document.querySelector("#passwordInput2");
+        if (this.checked) {
+            pwInput1.removeAttribute("disabled");
+            pwInput2.removeAttribute("disabled");
+        } else {
+            pwInput1.setAttribute("disabled", "");
+            pwInput2.setAttribute("disabled", "");
+        }
+    });
 </script>
 </body>
 </html>

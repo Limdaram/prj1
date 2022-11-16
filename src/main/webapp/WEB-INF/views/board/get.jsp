@@ -3,6 +3,7 @@
 <%@ page import="java.net.*"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="my" tagdir="/WEB-INF/tags" %>
+<%@taglib prefix="sec" uri="http://www.springframework.org/security/tags" %>
 
 <!doctype html>
 <html lang="en">
@@ -21,6 +22,14 @@
         <div class="col">
 
             <h1>${board.id}번 게시물</h1>
+
+            <c:url value="/board/modify" var="modifyLink">
+                <c:param name="id" value="${board.id }"></c:param>
+            </c:url>
+
+
+            </h1>
+
             <div class="mb-3">
                 <label class="form-label">
                     제목
@@ -75,10 +84,13 @@
 <form id="removeForm" action="${removeLink }" method="post">
     <input type="hidden" name="id" value="${board.id }">
 </form>
-<div class="d-grid gap-2 d-md-flex justify-content-md-center">
-    <a class = "btn btn-warning " href="${modifyLink}">수정하기</a>
-    <input class="btn btn-danger" type="submit" value="삭제하기" data-bs-toggle="modal" data-bs-target="#removeModal">
-</div>
+<sec:authentication property="name" var="username"/>
+    <c:if test="${board.writer == username}">
+        <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+            <a class = "btn btn-warning " href="${modifyLink}">수정하기</a>
+            <input class="btn btn-danger" type="submit" value="삭제하기" data-bs-toggle="modal" data-bs-target="#removeModal">
+        </div>
+    </c:if>
 <%--<a class = "btn btn-warning" href="${removeLink}">삭제하기</a>--%>
 
 <!-- Modal -->
@@ -119,11 +131,13 @@
     <div class="row">
         <div class="col">
             <%-- 댓글 작성 --%>
-            <input type="hidden" id="boardId" value="${board.id}">
-            <div class="input-group">
-                <input type="text" class="form-control" id="replyInput1">
-                <button class="btn btn-outline-secondary" id="replySendButton1"><i class="fa-solid fa-reply"></i></button>
-            </div>
+            <sec:authorize access="isAuthenticated()">
+                <input type="hidden" id="boardId" value="${board.id}">
+                <div class="input-group">
+                    <input type="text" class="form-control" id="replyInput1">
+                    <button class="btn btn-outline-secondary" id="replySendButton1"><i class="fa-solid fa-reply"></i></button>
+                </div>
+            </sec:authorize>
         </div>
     </div>
 </div>
