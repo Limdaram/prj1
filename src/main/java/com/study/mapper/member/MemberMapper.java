@@ -5,7 +5,6 @@ import com.study.domain.member.MemberDto;
 import java.util.List;
 
 public interface MemberMapper {
-    int delete(String id);
 
     int insert(MemberDto member);
 
@@ -18,4 +17,6 @@ public interface MemberMapper {
     MemberDto selectByEmail(String email);
 
     MemberDto selectByNickName(String nickName);
+
+    int deleteById(String id);
 }

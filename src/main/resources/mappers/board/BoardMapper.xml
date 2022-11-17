@@ -16,9 +16,11 @@
             b.writer,
             b.inserted,
             COUNT(DISTINCT r.id) countReply,
-            COUNT(DISTINCT f.id) countFile
+            COUNT(DISTINCT f.id) countFile,
+            COUNT(DISTINCT l.memberId) countLike
         FROM Board b LEFT JOIN Reply r ON b.id = r.boardId
                     LEFT JOIN File f ON b.id = f.boardId
+                    LEFT JOIN BoardLike l ON b.id = l.boardId
         WHERE
             <trim prefixOverrides="OR">
                 <if test="type == 'all' or type == 'title'">
@@ -63,6 +65,8 @@
             b.content,
             b.writer,
             b.inserted,
+            (SELECT COUNT(*) FROM BoardLike WHERE boardId = b.id AND memberId = #{username}) liked,
+            (SELECT COUNT(*) FROM BoardLike WHERE boardId = b.id) countLike,
             f.id fileId,
             f.name fileName
 <!--            COUNT(DISTINCT r.id) countReply,-->
@@ -80,7 +84,9 @@
         <result column="content" property="content"></result>
         <result column="writer" property="writer"></result>
         <result column="inserted" property="inserted"></result>
-<!--        <result column="countReply" property="countReply"></result>-->
+        <result column="countLike" property="countLike"></result>
+        <result column="liked" property="liked"></result>
+        <!--        <result column="countReply" property="countReply"></result>-->
 <!--        <result column="countFile" property="countFile"></result>-->
         <collection property="fileName" ofType="string">
             <result property="fileName" column="fileName"></result>
@@ -115,4 +121,43 @@
         DELETE FROM File
         WHERE boardId = #{id} AND name = #{fileName}
     </delete>
+
+    <select id="getLikeByBoardIdAndMemberId" resultType="int">
+        SELECT Count(*) FROM BoardLike
+        WHERE boardId = #{boardId} AND memberId = #{memberId}
+    </select>
+
+    <insert id="insertLike">
+        INSERT INTO BoardLike (boardId, memberId)
+        VALUES (#{boardId}, #{memberId})
+    </insert>
+
+    <delete id="deleteLike">
+        DELETE FROM BoardLike
+        WHERE boardId = #{boardId} AND memberId = #{memberId}
+    </delete>
+
+    <select id="countLikeByBoardId" resultType="int">
+        SELECT Count(*) FROM BoardLike
+        WHERE boardId = #{boardId}
+    </select>
+
+    <delete id="deleteLikeByBoardId">
+        DELETE FROM BoardLike
+        WHERE boardId = #{id}
+    </delete>
+
+    <delete id="deleteLikeByMemberId">
+        DELETE FROM BoardLike
+        WHERE memberId = #{id}
+    </delete>
+
+    <select id="listByMemberId" resultType="com.study.domain.board.BoardDto">
+        SELECT
+        id
+        FROM
+        Board
+        WHERE
+        writer = #{id}
+    </select>
 </mapper>

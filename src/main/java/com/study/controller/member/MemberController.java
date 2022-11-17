@@ -54,7 +54,8 @@ public class MemberController {
         MemberDto oldmember = service.getById(member.getId());
 
         rttr.addAttribute("id", member.getId());
-        if (oldmember.getPassword().equals(oldPassword)) {
+        boolean passwordMatch = passwordEncoder.matches(oldPassword, oldmember.getPassword());
+        if (passwordMatch) {
             int cnt = service.modify(member);
 
             if (cnt == 1) {

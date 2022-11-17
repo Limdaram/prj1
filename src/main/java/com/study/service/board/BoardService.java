@@ -15,7 +15,9 @@ import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 import software.amazon.awssdk.services.s3.model.ObjectCannedACL;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @Transactional
@@ -103,8 +105,8 @@ public class BoardService {
 
     }
 
-    public BoardDto get(int id) {
-        return boardMapper.select(id);
+    public BoardDto get(int id, String username) {
+        return boardMapper.select(id, username);
     }
 
     public int update(BoardDto board, MultipartFile[] addFiles, List<String> removeFiles) {
@@ -162,6 +164,9 @@ public class BoardService {
         // 게시물의 댓글 지우기
         replyMapper.deleteByBoardId(id);
 
+        // 좋아요 지우기
+        boardMapper.deleteLikeByBoardId(id);
+
         // 게시물 지우기
         return boardMapper.delete(id);
     }
@@ -174,4 +179,27 @@ public class BoardService {
                 .build();
         s3Client.deleteObject(deleteObjectRequest);
     }
+
+    public Map<String, Object> updateLike(String boardId, String memberId) {
+        Map<String, Object> map = new HashMap<>();
+
+        int cnt = boardMapper.getLikeByBoardIdAndMemberId(boardId, memberId);
+
+        if (cnt == 1) {
+            boardMapper.deleteLike(boardId, memberId);
+            map.put("current", "not liked");
+        } else {
+            boardMapper.insertLike(boardId, memberId);
+            map.put("current", "liked");
+        }
+        int countAll = boardMapper.countLikeByBoardId(boardId);
+        map.put("count", countAll);
+
+        return map;
+    }
+
+    public BoardDto get(int id) {
+        return get(id, null);
+    }
+
 }

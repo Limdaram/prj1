@@ -7,7 +7,7 @@ import java.util.List;
 public interface ReplyMapper {
     int insert(ReplyDto reply);
 
-    List<ReplyDto> selectReplyByBoardId(int boardId);
+    List<ReplyDto> selectReplyByBoardId(int boardId, String username);
 
     int deleteById(int id);
 
@@ -17,5 +17,6 @@ public interface ReplyMapper {
 
     int deleteByBoardId(int id);
 
+    int deleteByMemberId(String id);
 }
 

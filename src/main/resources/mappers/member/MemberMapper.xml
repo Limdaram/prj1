@@ -42,7 +42,7 @@
         WHERE id = #{id}
     </update>
 
-    <delete id="delete">
+    <delete id="deleteById">
         DELETE FROM Member
         WHERE id = #{id}
     </delete>

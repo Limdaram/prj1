@@ -20,15 +20,36 @@
 <div class="container-md">
     <div class="row">
         <div class="col">
+            <div class="d-flex">
+                <h1 class="me-auto">${board.id}번 게시물</h1>
 
-            <h1>${board.id}번 게시물</h1>
+                <c:url value="/board/modify" var="modifyLink">
+                    <c:param name="id" value="${board.id }"></c:param>
+                </c:url>
+                <p>
+                    <span
 
-            <c:url value="/board/modify" var="modifyLink">
-                <c:param name="id" value="${board.id }"></c:param>
-            </c:url>
+                    <sec:authorize access="not isAuthenticated()">
+                        style="pointer-events: none;"
+                    </sec:authorize>
 
+                            id="likeButton"
+                            class="btn btn-light"
+                    >
+                        <c:if test="${board.liked}">
+                            <i class="fa-solid fa-heart"></i>
+                        </c:if>
+                        <c:if test="${not board.liked}">
+                            <i class="fa-regular fa-heart"></i>
+                        </c:if>
+                    </span>
 
-            </h1>
+                    <span id="likeCount">
+                        ${board.countLike}
+                    </span>
+                </p>
+            </div>
+
 
             <div class="mb-3">
                 <label class="form-label">
@@ -130,12 +151,17 @@
     </div>
     <div class="row">
         <div class="col">
-            <%-- 댓글 작성 --%>
-            <sec:authorize access="isAuthenticated()">
                 <input type="hidden" id="boardId" value="${board.id}">
+                <sec:authorize access="isAuthenticated()">
+                <%-- 댓글 작성 --%>
                 <div class="input-group">
                     <input type="text" class="form-control" id="replyInput1">
                     <button class="btn btn-outline-secondary" id="replySendButton1"><i class="fa-solid fa-reply"></i></button>
+                </div>
+            </sec:authorize>
+            <sec:authorize access="not isAuthenticated()">
+                <div class="alert alert-light">
+                    댓글을 작성하시려면 로그인하세요.
                 </div>
             </sec:authorize>
         </div>
@@ -195,12 +221,36 @@
         integrity="sha384-OERcA2EqjJCMA+/3y+gxIOqMEjwtxJY7qPCqsdltbNJuaOe923+mo//f6V8Qbsw3"
         crossorigin="anonymous"></script>
 <script>
+    const ctx = "${pageContext.request.contextPath}";
     // 삭제확인 버튼 클릭하면 삭제 form 전송
     document.querySelector("#removeConfirmButton").addEventListener("click", function() {
         document.querySelector("#removeForm").submit();
     })
 
-    const ctx = "${pageContext.request.contextPath}";
+
+    // 좋아요 버튼 클릭시
+    document.querySelector("#likeButton").addEventListener("click", function() {
+        const boardId = document.querySelector("#boardId").value;
+
+        fetch(`\${ctx}/board/like`, {
+            method : "put",
+            headers : {
+                "Content-Type" : "application/json"
+            },
+            body : JSON.stringify({boardId})
+        })
+        .then(res => res.json())
+        .then(data => {
+
+            if (data.current == 'liked') {
+                document.querySelector("#likeButton").innerHTML = `<i class="fa-solid fa-heart"></i>`
+            } else {
+                document.querySelector("#likeButton").innerHTML = `<i class="fa-regular fa-heart"></i>`
+            }
+
+            document.querySelector("#likeCount").innerText = data.count;
+        });
+    });
 
     listReply();
     // 댓글 crud 메세지 토스트
@@ -246,13 +296,27 @@
                 const replyListContainer = document.querySelector("#replyListContainer");
                 replyListContainer.innerHTML = "";
 
+
                 for (const item of list) {
                     const modifyReplyButtonId = `modifyReplyButton\${item.id}`;
                     const removeReplyButtonId = `removeReplyButton\${item.id}`;
                     // console.log(item.id);
+                    const editButton = `
+                        <div>
+                            <button class="btn btn-light" data-bs-toggle="modal" data-bs-target="#modifyReplyFormModal" data-reply-id="\${item.id}" id="\${modifyReplyButtonId}">
+                                <i class="fa-solid fa-pen"></i>
+                            </button>
+                            <button class="btn btn-light" data-bs-toggle="modal" data-bs-target="#removeReplyConfirmModal" data-reply-id="\${item.id}" id="\${removeReplyButtonId}">
+                                <i class="fa-solid fa-x"></i>
+                            </button>
+                        </div>
+                    `
                     const replyDiv = `
                         <div class="list-group-item d-flex">
                             <div class="me-auto">
+                                <div>
+                                    \${item.writer}
+                                </div>
                                 <div>
                                     \${item.content}
                                 </div>
@@ -261,30 +325,25 @@
                                         \${item.ago}
                                     </small>
                             </div>
-                            <div>
-                                <button class="btn btn-light" data-bs-toggle="modal" data-bs-target="#modifyReplyFormModal" data-reply-id="\${item.id}" id="\${modifyReplyButtonId}">
-                                    <i class="fa-solid fa-pen"></i>
-                                </button>
-                                <button class="btn btn-light" data-bs-toggle="modal" data-bs-target="#removeReplyConfirmModal" data-reply-id="\${item.id}" id="\${removeReplyButtonId}">
-                                    <i class="fa-solid fa-x"></i>
-                                </button>
-                            </div>
+					        \${item.editable ? editButton : ''}
                         </div>`;
                     replyListContainer.insertAdjacentHTML("beforeend", replyDiv);
-                    // 수정 폼 모달에 댓글 내용 넣기
-                    document.querySelector("#" + modifyReplyButtonId)
-                        .addEventListener("click", function() {
-                            document.querySelector("#modifyFormModalSubmitButton").setAttribute("data-reply-id", this.dataset.replyId);
-                            readReplyAndSetModalForm(this.dataset.replyId);
-                        });
-                    // 삭제확인 버튼에 replyId 옮기기
-                    document.querySelector("#" + removeReplyButtonId)
-                        .addEventListener("click", function() {
-                            // console.log(this.id + "번 삭제버튼 클릭됨");
-                            console.log(this.dataset.replyId + "번 댓글 삭제할 예정, 모달 띄움")
-                            document.querySelector("#removeConfirmModalSubmitButton").setAttribute("data-reply-id", this.dataset.replyId);
-                            // removeReply(this.dataset.replyId);
-                        });
+                    if (item.editable) {
+                        // 수정 폼 모달에 댓글 내용 넣기
+                        document.querySelector("#" + modifyReplyButtonId)
+                            .addEventListener("click", function() {
+                                document.querySelector("#modifyFormModalSubmitButton").setAttribute("data-reply-id", this.dataset.replyId);
+                                readReplyAndSetModalForm(this.dataset.replyId);
+                            });
+                        // 삭제확인 버튼에 replyId 옮기기
+                        document.querySelector("#" + removeReplyButtonId)
+                            .addEventListener("click", function() {
+                                // console.log(this.id + "번 삭제버튼 클릭됨");
+                                console.log(this.dataset.replyId + "번 댓글 삭제할 예정, 모달 띄움")
+                                document.querySelector("#removeConfirmModalSubmitButton").setAttribute("data-reply-id", this.dataset.replyId);
+                                // removeReply(this.dataset.replyId);
+                            });
+                    }
                 }
             });
     }
