@@ -3,6 +3,7 @@ package com.study.domain.member;
 import lombok.Data;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 public class MemberDto {
@@ -12,4 +13,5 @@ public class MemberDto {
     private String nickName;
 
     private LocalDateTime inserted;
+    private List<String> auth;
 }

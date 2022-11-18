@@ -20,16 +20,27 @@
         ORDER By id
     </select>
 
-    <select id="selectById" resultType="com.study.domain.member.MemberDto">
+    <select id="selectById" resultMap="memberMap">
         SELECT
             id,
             nickName,
             password,
             email,
-            inserted
-        FROM Member
+            inserted,
+            a.auth
+        FROM Member m LEFT JOIN Authority a ON m.id = a.memberId
         WHERE id = #{id}
     </select>
+    <resultMap type="com.study.domain.member.MemberDto" id="memberMap">
+        <id column="id" property="id"></id>
+        <result column="nickName" property="nickName"></result>
+        <result column="password" property="password"></result>
+        <result column="email" property="email"></result>
+        <result column="inserted" property="inserted"></result>
+        <collection property="auth" ofType="string">
+            <result column="auth" property="auth"></result>
+        </collection>
+    </resultMap>
 
     <update id="update">
         UPDATE Member

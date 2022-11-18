@@ -54,7 +54,7 @@
                     <label for="" class="form-label">
                         비밀번호
                     </label>
-                    <input disabled id="passwordInput1" class="form-control" type="password" value="${member.password}" name="password">
+                    <input disabled id="passwordInput1" class="form-control" type="password" value="" name="password">
                     <div id="passwordText1" class="form-text"></div>
                 </div>
 
@@ -101,7 +101,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <input id="oldPasswordInput1" type="text" class="form-control">
+                <input id="oldPasswordInput1" type="password" class="form-control">
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>

@@ -204,7 +204,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <input type="text" class="form-control" id="modifyReplyInput">
+                <input type="password" class="form-control" id="modifyReplyInput">
             </div>
 
             <div class="modal-footer">
@@ -314,9 +314,10 @@
                     const replyDiv = `
                         <div class="list-group-item d-flex">
                             <div class="me-auto">
-                                <div>
+                                <h5>
+                                    <i class="fa-solid fa-user"></i>
                                     \${item.writer}
-                                </div>
+                                </h5>
                                 <div>
                                     \${item.content}
                                 </div>
@@ -361,29 +362,32 @@
             .then(() => listReply());
     }
 
-    document.querySelector("#replySendButton1").addEventListener("click", function () {
-        const boardId = document.querySelector("#boardId").value;
-        const content = document.querySelector("#replyInput1").value;
+    const replySendButton1 = document.querySelector("#replySendButton1");
+    if (replySendButton1 != null) {
+        document.querySelector("#replySendButton1").addEventListener("click", function () {
+            const boardId = document.querySelector("#boardId").value;
+            const content = document.querySelector("#replyInput1").value;
 
-        const data = {
-            boardId,
-            content
-        };
-        fetch(`\${ctx}/reply/add`, {
-            method : "POST",
-            headers : {
-                "Content-Type": "application/json"
-            },
-            body : JSON.stringify(data)
-        })
-            .then(res => res.json())
-            .then(data => {
-                document.querySelector("#replyInput1").value = "";
-                document.querySelector("#replyMessage1").innerText = data.message
-                toast.show();
+            const data = {
+                boardId,
+                content
+            };
+            fetch(`\${ctx}/reply/add`, {
+                method : "POST",
+                headers : {
+                    "Content-Type": "application/json"
+                },
+                body : JSON.stringify(data)
             })
-            .then(() => listReply())
-    });
+                .then(res => res.json())
+                .then(data => {
+                    document.querySelector("#replyInput1").value = "";
+                    document.querySelector("#replyMessage1").innerText = data.message
+                    toast.show();
+                })
+                .then(() => listReply())
+        });
+    };
 </script>
 </body>
 </html>

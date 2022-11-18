@@ -3,6 +3,7 @@ package com.study.controller.member;
 import com.study.domain.member.MemberDto;
 import com.study.service.member.MemberService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -39,16 +40,30 @@ public class MemberController {
     }
 
     @GetMapping("list")
+    @PreAuthorize("hasAuthority('admin')")
     public void list(Model model) {
         model.addAttribute("memberList", service.list());
     }
 
-    @GetMapping({"info", "modify"})
+//    @GetMapping({"info", "modify"})
+//    @PreAuthorize("hasAuthority('admin') or (authentication.name == #id)")
+//    public void member(String id, Model model) {
+//        model.addAttribute("member", service.getById(id));
+//    }
+
+    @GetMapping({"info"})
+    @PreAuthorize("hasAuthority('admin') or (authentication.name == #id)")
     public void member(String id, Model model) {
+        model.addAttribute("member", service.getById(id));
+    }
+    @GetMapping({ "modify"})
+    @PreAuthorize("(authentication.name == #id)")
+    public void member1(String id, Model model) {
         model.addAttribute("member", service.getById(id));
     }
 
     @PostMapping("modify")
+    @PreAuthorize("authentication.name == #member.id")
     public String modify(MemberDto member, String oldPassword, RedirectAttributes rttr) {
 
         MemberDto oldmember = service.getById(member.getId());
